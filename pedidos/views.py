@@ -1,10 +1,12 @@
+from django.db.models import DecimalField, ExpressionWrapper, F
+from django.db.models.aggregates import Sum
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from pedidos.filters import ClienteFilter, PedidoFilter
-from pedidos.models import Cliente, Pedido, Produto
+from pedidos.models import Cliente, Pedido, Produto, ProdutoPedido
 from pedidos.serializers import (ClienteSerializer, PedidoSerializer,
                                  ProdutoSerializer)
 
@@ -22,7 +24,6 @@ class ClienteViewSet(viewsets.ModelViewSet):
     filterset_class = ClienteFilter
 
     def get_queryset(self):
-        print('get_queryset')
         return self.filter_queryset(self.queryset)
 
 
@@ -33,5 +34,12 @@ class PedidoViewSet(viewsets.ModelViewSet):
     filterset_class = PedidoFilter
 
     def get_queryset(self):
-        print('get_queryset')
         return self.filter_queryset(self.queryset)
+
+    @action(methods=["get"], detail=False,  url_path=r'faturamento_total')
+    def faturamento_total(self, request):
+        total = ProdutoPedido.objects.annotate(faturamento=ExpressionWrapper(
+            F('valor') * F('quantidade'), output_field=DecimalField()))
+        faturamento_total = total.aggregate(total=Sum('faturamento'))
+        payload = dict(faturamento_total=faturamento_total['total'])
+        return Response(payload, status=200)

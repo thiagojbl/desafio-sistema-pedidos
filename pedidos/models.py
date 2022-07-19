@@ -21,6 +21,9 @@ class Pedido(models.Model):
     itens = models.ManyToManyField(
         Produto, related_name="pedidos_itens", through="ProdutoPedido")
 
+    # def faturamento_total(self):
+    # return .get_total
+
 
 class ProdutoPedido(models.Model):
     produto = models.ForeignKey(
@@ -31,3 +34,8 @@ class ProdutoPedido(models.Model):
         on_delete=models.CASCADE)
     valor = models.FloatField("Valor")
     quantidade = models.IntegerField("Quantidade")
+
+    @property
+    def get_total(self):
+        pedidos = self.objects.all()
+        return sum((pedido.valor * pedido.quantidade) for pedido in pedidos)
