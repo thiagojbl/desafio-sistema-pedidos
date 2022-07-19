@@ -4,7 +4,8 @@ from django.db import models
 class Produto(models.Model):
     descricao = models.CharField("Descrição", max_length=50)
     marca = models.CharField("Marca", max_length=30)
-    valor = models.FloatField("Valor")
+    valor = models.FloatField("Valor", blank=True, null=True)
+    valor_compra = models.FloatField("Valor de Compra", blank=True, null=True)
 
 
 class Cliente(models.Model):
